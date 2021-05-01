@@ -1,0 +1,15 @@
+PROTOCOL UDP:
+
+    INCOMING SERVER
+
+        1 - authentication
+        2 - comm granted modes
+        3 - reqP2P
+        4 - reqMulticast
+        5 - sendMSG
+
+    mode=<1>&user=<>&password=<>
+    mode=<2>&user=<>
+    mode=<3>&user=<>
+    mode=<4>&user=<>
+    mode=<5>&user=<>&destuser=<>&data=<>

@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <pthread.h>
 
+/* CONSTANTS AND STRUCTS */
+
 #define BUFLEN 512	// buffer length
 #define TCP_PORT 9000	// TCP port to admin CLI
 #define UDP_PORT 5000   // UDP port 
@@ -17,10 +19,26 @@ typedef struct user {
 
 } user;
 
-user userlist[MAX_USERS];
+/* FUNCTIONS */
+void init();
 
-void erro(char *);
+void loopUDP();
 
-void TCPWorker();
+int switcher();
+
+void error(char *);
+
+void *TCPWorker();
 
 void sigint(int);
+
+/* GLOBALS */
+
+pthread_t TCP_thread_id;
+user user_list[MAX_USERS];
+
+struct sockaddr_in udp_int_socket, udp_ext_socket;
+int udp_fd, udp_recv_len;
+socklen_t udp_ext_len = sizeof(udp_ext_socket);
+char udp_buf[BUFLEN];
+char udp_answer[BUFLEN];
