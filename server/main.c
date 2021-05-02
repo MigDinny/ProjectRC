@@ -47,7 +47,7 @@ void loopUDP() {
         udp_buf[udp_recv_len] = '\0';
 
         status = switcher(); // detects which kind of request is and answers accordingly
-
+        printf("status = %d\n", status);
     }
 
 }
@@ -79,12 +79,10 @@ int switcher() {
         case '1':
             return auth();
         case '2':
-            return listModes();
-        case '3':
             return reqP2P();
-        case '4':
+        case '3':
             return reqMulticast();
-        case '5':
+        case '4':
             return sendMSG();
         default:
             return -1;
@@ -95,6 +93,7 @@ int switcher() {
 
 int auth() {
 
+    char answer[BUFLEN];
     char *userpair = udp_pairs[1];
     char *passpair = udp_pairs[2];
 
@@ -109,24 +108,80 @@ int auth() {
 
     // auth
 
+    // @TODO EDGAR
+
     // build response
+    sprintf(answer, "1 - Normal chat\n2 - P2P chat\n3 - Group chat\n");
+
+    // if auth invalid
+    sprintf(answer, "ACCESS DENIED\n");
 
     // send response
-    //sendto();
+	sendto(udp_fd, answer, BUFLEN, MSG_CONFIRM, (struct sockaddr *) &udp_ext_socket, sizeof(udp_ext_socket));
 
     return 0;
 }
 
-int listModes() {
-
-}
-
 int reqP2P() {
 
+    char answer[BUFLEN];
+    char *userpair = udp_pairs[1];
+    char *destuserpair = udp_pairs[2];
+    char *username;
+    char *destuser;
+
+    strtok(userpair, "=");
+    username = strtok(NULL, "=");
+
+    strtok(destuserpair, "=");
+    destuser = strtok(NULL, "=");
+    
+    // @TODO EDGAR
+    // fetch IP of destuser
+
+
+    // send response with IP 
+
+    // or send invalid destuser
+
+
+    return 0;
+}
+
+int reqMulticast() {
+
+    // blank for now
+        return 0;
 }
 
 int sendMSG() {
 
+    char answer[BUFLEN];
+    char *userpair = udp_pairs[1];
+    char *destuserpair = udp_pairs[2];
+    char *messagepair = udp_pairs[3];
+    char *username;
+    char *destuser;
+    char *message;
+    
+    strtok(userpair, "=");
+    username = strtok(NULL, "=");
+
+    strtok(destuserpair, "=");
+    destuser = strtok(NULL, "=");
+
+    strtok(messagepair, "=");
+    message = strtok(NULL, "=");
+
+
+    // @TODO EDGAR
+    // fetch IP from destuser
+
+    // build socket to send message to destuser
+
+    // send message like this "<username>: message"
+
+    return 0;
 }
 
 void *TCPWorker() {

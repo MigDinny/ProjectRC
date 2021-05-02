@@ -31,6 +31,7 @@ int switcher();
 int auth();
 int listModes();
 int reqP2P();
+int reqMulticast();
 int sendMSG();
 
 // TCP
