@@ -121,9 +121,13 @@ int auth() {
       if (strcmp(user_list[i].username, username) == 0) {
 
         //checks to see if the pasword matches
-        if (strcmp(user_list[i].password, password) == 0) {
 
-          sprintf(answer, "1 - Normal chat\n2 - P2P chat\n3 - Group chat\n");
+        if (strcmp(user_list[i].password, password) == 0) {
+          char authorizations[BUFLEN];
+          sprintf(answer, "OPTIONS ");
+          if (strcmp(user_list[i].client_server,"yes") == 0)  strcat(authorizations, "|Client-Server");
+          if (strcmp(user_list[i].p2p,"yes") == 0) strcat(authorizations, "|P2P");
+          if(strcmp(user_list[i].group, "yes") == 0) strcat(authorizations, "|Group");
           break;
         }
 
