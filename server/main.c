@@ -74,7 +74,7 @@ int switcher() {
 
     token = strtok(NULL, "=");
     if (token == NULL) return -1;
-    
+
     switch (token[0]) {
         case '1':
             return auth();
@@ -108,16 +108,39 @@ int auth() {
 
     // auth
 
-    // @TODO EDGAR
+    for (int i = 0; i < MAX_USERS; i++) {
 
-    // build response
-    sprintf(answer, "1 - Normal chat\n2 - P2P chat\n3 - Group chat\n");
+      if (strcmp(user_list[i].username, "") == 0){
 
-    // if auth invalid
-    sprintf(answer, "ACCESS DENIED\n");
+        sprintf(answer, "ACCESS DENIED\n");
+        break;
+
+      }
+
+      //means username has a match
+      if (strcmp(user_list[i].username, username) == 0) {
+
+        //checks to see if the pasword matches
+        if (strcmp(user_list[i].password, password) == 0) {
+
+          sprintf(answer, "1 - Normal chat\n2 - P2P chat\n3 - Group chat\n");
+          break;
+        }
+
+        //due to the username being unique if the password is denied, the access is denied
+        else {
+
+          sprintf(answer, "ACCESS DENIED\n");
+          sendto(udp_fd, answer, BUFLEN, MSG_CONFIRM, (struct sockaddr *) &udp_ext_socket, sizeof(udp_ext_socket));
+          return -1;
+        }
+
+
+      }
+    }
 
     // send response
-	sendto(udp_fd, answer, BUFLEN, MSG_CONFIRM, (struct sockaddr *) &udp_ext_socket, sizeof(udp_ext_socket));
+	  sendto(udp_fd, answer, BUFLEN, MSG_CONFIRM, (struct sockaddr *) &udp_ext_socket, sizeof(udp_ext_socket));
 
     return 0;
 }
@@ -135,15 +158,33 @@ int reqP2P() {
 
     strtok(destuserpair, "=");
     destuser = strtok(NULL, "=");
-    
+
     // @TODO EDGAR
     // fetch IP of destuser
+    for (int i = 0 ; i < MAX_USERS; i++) {
 
+      if (strcmp(user_list[i].username, "") == 0){
 
-    // send response with IP 
+        sprintf(answer, "INVALID DESTINATION USER\n");
+        sendto(udp_fd, answer, BUFLEN, MSG_CONFIRM, (struct sockaddr *) &udp_ext_socket, sizeof(udp_ext_socket));
+        return -1;
+
+      }
+
+      //means username has a match
+      if (strcmp(user_list[i].username, username) == 0) {
+
+        sprintf(answer, "%s", user_list[i].ip);
+        break;
+
+      }
+
+    }
+
+    // send response with IP
 
     // or send invalid destuser
-
+	  sendto(udp_fd, answer, BUFLEN, MSG_CONFIRM, (struct sockaddr *) &udp_ext_socket, sizeof(udp_ext_socket));
 
     return 0;
 }
@@ -157,13 +198,14 @@ int reqMulticast() {
 int sendMSG() {
 
     char answer[BUFLEN];
+    char endClient[100];
     char *userpair = udp_pairs[1];
     char *destuserpair = udp_pairs[2];
     char *messagepair = udp_pairs[3];
     char *username;
     char *destuser;
     char *message;
-    
+
     strtok(userpair, "=");
     username = strtok(NULL, "=");
 
@@ -176,10 +218,51 @@ int sendMSG() {
 
     // @TODO EDGAR
     // fetch IP from destuser
+    for (int i = 0 ; i < MAX_USERS; i++) {
+
+      if (strcmp(user_list[i].username, "") == 0){
+
+        sprintf(answer, "INVALID DESTINATION USER\n");
+        sendto(udp_fd, answer, BUFLEN, MSG_CONFIRM, (struct sockaddr *) &udp_ext_socket, sizeof(udp_ext_socket));
+        return -1;
+
+      }
+
+      //means username has a match
+      if (strcmp(user_list[i].username, username) == 0) {
+
+        strcpy(endClient,  user_list[i].ip);
+
+        break;
+
+      }
+
+    }
 
     // build socket to send message to destuser
 
+
+    int dest_fd;
+    struct sockaddr_in dest_addr, arrival_addr;
+    socklen_t slen = sizeof(arrival_addr);
+    struct hostent *hostPtr;
+
+    strcpy(endServer, argv[1]);
+	  if ((hostPtr = gethostbyname(endClient)) == 0)
+		   erro("Unreachable address");
+
+	  if ((dest_fd = socket(AF_INET,SOCK_DGRAM,0)) == -1)
+		  erro("Problem creating the socket");
+
+	  dest_addr.sin_family = AF_INET;
+    // TO -DO METER PORTO !!!!!!!!!!!!!!! (nao sabia como! )
+	  //dest_addr.sin_port   = htons((short) atoi( ));
+	  dest_addr.sin_addr.s_addr = ((struct in_addr *)(hostPtr->h_addr))->s_addr;
+
+
     // send message like this "<username>: message"
+    sprintf(answer, "%s",message);
+    sendto(dest_fd, answer, BUFLEN, MSG_CONFIRM, (struct sockaddr *) &dest_addr, sizeof(dest_addr);
 
     return 0;
 }
