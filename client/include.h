@@ -1,12 +1,17 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <netdb.h>
 
 #define BUFLEN 512	// buffer length
 
 char username[30];
-char password[30];
+char permissions[3][30];
 
 
 int client_udp_fd;
@@ -16,3 +21,9 @@ struct hostent *hostPtr;
 
 void init(char *, char *);
 void error(char *);
+void menu();
+void authentication();
+int validChoice(char *);
+void clientServerFunc();
+void p2pFunc();
+void multicastFunc();
