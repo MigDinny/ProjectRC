@@ -41,19 +41,13 @@ void loopUDP() {
 
     while (1) {
 
-        printf("here2");
-        fflush(stdout);
-
         udp_recv_len = recvfrom(udp_fd, udp_buf, BUFLEN, 0, (struct sockaddr *) &udp_ext_socket, (socklen_t *)&udp_ext_len);
-        printf("%d", udp_recv_len);
-        fflush(stdout);
         if (udp_recv_len == -1) continue;
 
         udp_buf[udp_recv_len] = '\0';
 
         status = switcher(); // detects which kind of request is and answers accordingly
-        printf("status = %d\n", status);
-        fflush(stdout);
+
     }
 
 }
@@ -62,9 +56,8 @@ int switcher() {
 
     char *token;
 
-    char pairs[5][300];
     for (int u = 0; u < 5; u++)
-        pairs[u][0] = '\0';
+        udp_pairs[u][0] = '\0';
 
     int i = 0;
 
@@ -72,32 +65,68 @@ int switcher() {
     while (token != NULL && i < 5) {
         if (token[0] == 'd') break;
 
-        strcpy(pairs[i++], token);
+        strcpy(udp_pairs[i++], token);
         token = strtok(NULL, "&");
     }
 
-    token = strtok(pairs[0], "=");
+    token = strtok(udp_pairs[0], "=");
     if (strcmp(token, "mode") != 0) return -1;
 
     token = strtok(NULL, "=");
-    if (token == NULL) return -2;
+    if (token == NULL) return -1;
     
     switch (token[0]) {
         case '1':
-            return -6;
+            return auth();
         case '2':
-            return -7;
+            return listModes();
         case '3':
-            return -3;
+            return reqP2P();
         case '4':
-            return -4;
+            return reqMulticast();
         case '5':
-            return -5;
+            return sendMSG();
         default:
-            return -2;
+            return -1;
     }
 
+    return -1;
+}
+
+int auth() {
+
+    char *userpair = udp_pairs[1];
+    char *passpair = udp_pairs[2];
+
+    char *username;
+    char *password;
+
+    strtok(userpair, "=");
+    username = strtok(NULL, "=");
+
+    strtok(passpair, "=");
+    password = strtok(NULL, "=");
+
+    // auth
+
+    // build response
+
+    // send response
+    //sendto();
+
     return 0;
+}
+
+int listModes() {
+
+}
+
+int reqP2P() {
+
+}
+
+int sendMSG() {
+
 }
 
 void *TCPWorker() {

@@ -19,18 +19,24 @@ typedef struct user {
 
 } user;
 
+
 /* FUNCTIONS */
 void init();
-
-void loopUDP();
-
-int switcher();
-
+void sigint(int);
 void error(char *);
 
+// UDP
+void loopUDP();
+int switcher();
+int auth();
+int listModes();
+int reqP2P();
+int sendMSG();
+
+// TCP
 void *TCPWorker();
 
-void sigint(int);
+
 
 /* GLOBALS */
 
@@ -42,3 +48,4 @@ int udp_fd, udp_recv_len;
 socklen_t udp_ext_len = sizeof(udp_ext_socket);
 char udp_buf[BUFLEN];
 char udp_answer[BUFLEN];
+char udp_pairs[5][300];
