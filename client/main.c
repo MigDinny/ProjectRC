@@ -68,6 +68,15 @@ void init(char *server_name, char *port){
 
 void menu(){
 
+  do{
+    printf("")
+    scanf("%s",)
+
+
+
+
+  }while(1);
+
 }
 
 void error(char *s) {
