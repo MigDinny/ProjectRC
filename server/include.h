@@ -5,17 +5,23 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <netinet/in.h>
+#include <netdb.h>
 
 /* CONSTANTS AND STRUCTS */
 
 #define BUFLEN 512	// buffer length
 #define TCP_PORT 9000	// TCP port to admin CLI
-#define UDP_PORT 5000   // UDP port 
-#define MAX_USERS 20    // max users 
+#define UDP_PORT 5000   // UDP port
+#define MAX_USERS 20    // max users
 
 typedef struct user {
     char username[20];
+    char ip[20];
     char password[20];
+    char client_server[4];
+    char p2p[4];
+    char group[4];
 
 } user;
 

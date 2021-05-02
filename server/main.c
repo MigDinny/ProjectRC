@@ -247,12 +247,11 @@ int sendMSG() {
     socklen_t slen = sizeof(arrival_addr);
     struct hostent *hostPtr;
 
-    strcpy(endServer, argv[1]);
 	  if ((hostPtr = gethostbyname(endClient)) == 0)
-		   erro("Unreachable address");
+		  error("Unreachable address");
 
 	  if ((dest_fd = socket(AF_INET,SOCK_DGRAM,0)) == -1)
-		  erro("Problem creating the socket");
+		  error("Problem creating the socket");
 
 	  dest_addr.sin_family = AF_INET;
     // TO -DO METER PORTO !!!!!!!!!!!!!!! (nao sabia como! )
@@ -262,7 +261,7 @@ int sendMSG() {
 
     // send message like this "<username>: message"
     sprintf(answer, "%s",message);
-    sendto(dest_fd, answer, BUFLEN, MSG_CONFIRM, (struct sockaddr *) &dest_addr, sizeof(dest_addr);
+    sendto(dest_fd, answer, BUFLEN, MSG_CONFIRM, (struct sockaddr *) &dest_addr, sizeof(dest_addr));
 
     return 0;
 }
