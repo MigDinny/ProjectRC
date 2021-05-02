@@ -123,11 +123,13 @@ int auth() {
         //checks to see if the pasword matches
 
         if (strcmp(user_list[i].password, password) == 0) {
-          char authorizations[BUFLEN];
-          sprintf(answer, "OPTIONS ");
+          char authorizations[300];
+
           if (strcmp(user_list[i].client_server,"yes") == 0)  strcat(authorizations, "|Client-Server");
           if (strcmp(user_list[i].p2p,"yes") == 0) strcat(authorizations, "|P2P");
           if(strcmp(user_list[i].group, "yes") == 0) strcat(authorizations, "|Group");
+
+          sprintf(answer, "OPTIONS%s",authorizations);
           break;
         }
 
