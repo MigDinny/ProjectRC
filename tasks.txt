@@ -1,0 +1,7 @@
+- merge tcp no udp
+- dar fix ao server na porta
+- cliente 3 threads, fazer as funções exceto multicast
+- testar com server aberto
+
+
+- fazer multicast
