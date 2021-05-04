@@ -32,8 +32,7 @@ void authentication(){
   printf("Password: ");
   scanf("%s",password_input);
 
-  //MIGUEL TO-DO verifica se isto cumpre o teu protocolo (acho que falta um d algures mas nao entendi onde )
-  sprintf(request, "mode=1&%s&%s", username_input, password_input);
+  sprintf(request, "mode=1&username=%s&password=%s", username_input, password_input);
   sendto(client_udp_fd, request, strlen(request), MSG_CONFIRM, (struct sockaddr *) &dest_addr, sizeof(dest_addr));
 
   //get answer
