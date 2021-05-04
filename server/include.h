@@ -14,6 +14,7 @@
 #define TCP_PORT 9000	// TCP port to admin CLI
 #define UDP_PORT 5000   // UDP port
 #define MAX_USERS 20    // max users
+#define CLIENT_PORT 1000
 
 typedef struct user {
     char username[20];

@@ -261,7 +261,7 @@ int sendMSG() {
 
 	  dest_addr.sin_family = AF_INET;
     // TO -DO METER PORTO !!!!!!!!!!!!!!! (nao sabia como! )
-	  //dest_addr.sin_port   = htons((short) atoi( ));
+	  dest_addr.sin_port   = htons((short) atoi(CLIENT_PORT));
 	  dest_addr.sin_addr.s_addr = ((struct in_addr *)(hostPtr->h_addr))->s_addr;
 
 
