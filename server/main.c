@@ -117,7 +117,7 @@ int auth() {
 
       if (strcmp(user_list[i].username, "") == 0){
 
-        sprintf(answer, "ACCESS DENIED\n");
+        sprintf(answer, "ACCESS DENIED");
         break;
 
       }

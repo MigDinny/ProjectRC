@@ -38,8 +38,8 @@ void authentication(){
   //get answer
   recvfrom(client_udp_fd, answer , BUFLEN, 0, (struct sockaddr *) &arrival_addr, (socklen_t *)&slen);
 
-  //means that authentication failed. The program ends (MIGUEL matamos o programa ou damos outra chance? mandar status num while até acertarem)
-  if(strcmp(answer, "ACCESS DENIED")){
+  //means that authentication failed. The program ends (MIGUEL matamos o programa ou damos outra chance? mandar status num while até acertarem) // matamos o programa bro, nao merece viver
+  if(strcmp(answer, "ACCESS DENIED") == 0){
     printf("%s\n",answer);
     exit(0);
   }
@@ -52,13 +52,13 @@ void authentication(){
   char *token  = strtok(answer, "|");
 
   //The first strtok gives always the string OPTIONS which is useless
-  token = strtok(answer, "|");
+  token = strtok(NULL, "|");
 
   //while there are more spaces left we keep adding the arguments
   while( token != NULL){
 
     strcpy( permissions[counter++], token);
-    token  = strtok(answer, "|");
+    token  = strtok(NULL, "|");
   }
 
   printf("%s\n", answer);
