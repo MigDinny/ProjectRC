@@ -67,7 +67,7 @@ int valueVerification(char arguments[MAX_ARGUMENTS][ARGUMENT_LEN]);
 void addUser(char arguments[MAX_ARGUMENTS][ARGUMENT_LEN]);
 void deleteUser(char arguments[MAX_ARGUMENTS][ARGUMENT_LEN]);
 void sigint(int);
-void init();
+void init_tcp();
 void writeToFile();
 
 pthread_t TCPThreadID;
