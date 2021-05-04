@@ -5,3 +5,17 @@
 
 
 - fazer multicast
+PROTOCOL UDP:
+
+    INCOMING SERVER
+
+        1 - authentication (returns list of comm modes)
+        2 - reqP2P
+        3 - reqMulticast
+        4 - sendMSG
+
+    mode=<1>&user=<>&password=<>
+    mode=<2>&user=<>&destuser=<>
+    mode=<3>&user=<>
+    mode=<4>&user=<>&destuser=<>&data=<>
+
