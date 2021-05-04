@@ -19,3 +19,9 @@ PROTOCOL UDP:
     mode=<3>&user=<>
     mode=<4>&user=<>&destuser=<>&data=<>
 
+
+    COMM CLIENTS
+
+        mode=%s&from=%s&data=%s
+
+        
