@@ -2,20 +2,22 @@
 
 
 
-
 int main(int argc, char *argv[]) {
 
-    if (argc != 3) {
-      printf("cliente <host> <port> \n");
-      exit(0);
-    }
+	if (argc != 3) {
+	  printf("cliente <host> <port> \n");
+	  exit(0);
+	}
 
-    init(argv[1], argv[2]);
+	init(argv[1], argv[2]);
 
-    authentication();
+	authentication();
 
-    menu();
+	// start thread to receive incoming UDP messages
+	pthread_create(&UDPThreadID, NULL, UDPWorker, NULL);
 
+	menu();
+	pause();
 }
 
 //
@@ -40,8 +42,8 @@ void authentication(){
 
   //means that authentication failed. The program ends (MIGUEL matamos o programa ou damos outra chance? mandar status num while até acertarem) // matamos o programa bro, nao merece viver
   if(strcmp(answer, "ACCESS DENIED") == 0){
-    printf("%s\n",answer);
-    exit(0);
+	printf("%s\n",answer);
+	exit(0);
   }
 
   strcpy(username , username_input);
@@ -57,8 +59,8 @@ void authentication(){
   //while there are more spaces left we keep adding the arguments
   while( token != NULL){
 
-    strcpy( permissions[counter++], token);
-    token  = strtok(NULL, "|");
+	strcpy( permissions[counter++], token);
+	token  = strtok(NULL, "|");
   }
 
   printf("%s\n", answer);
@@ -90,56 +92,25 @@ void menu(){
   scanf("%s", choice);
 
   if ((strcmp(choice, "Client-Server") == 0)) {
-
-    if (validChoice("Client-Server") == 0) {
-
-      clientServerFunc();
-
-    }
-
-    else {
-
-      printf("You do not have authorization for this feature!\n");
-
-    }
-  }
-
-  else if ((strcmp(choice, "P2P") == 0)) {
-
-    if (validChoice("P2P") == 0) {
-
-      p2pFunc();
-
-    }
-
-    else {
-
-      printf("You do not have authorization for this feature!\n");
-
-    }
-
-  }
-
-  else if ((strcmp(choice, "Group") == 0)) {
-
-    if (validChoice("Group") == 0) {
-
-      multicastFunc();
-
-    }
-
-    else {
-
-      printf("You do not have authorization for this feature!\n");
-
-    }
-
-  }
-
-  else {
-
-    printf("Not a valid option\n");
-
+	if (validChoice("Client-Server") == 0) {
+	  clientServerFunc();
+	} else {
+	  printf("You do not have authorization for this feature!\n");
+	}
+  } else if ((strcmp(choice, "P2P") == 0)) {
+	if (validChoice("P2P") == 0) {
+	  p2pFunc();
+	} else {
+	  printf("You do not have authorization for this feature!\n");
+	}
+  } else if ((strcmp(choice, "Group") == 0)) {
+	if (validChoice("Group") == 0) {
+	  multicastFunc();
+	} else {
+	  printf("You do not have authorization for this feature!\n");
+	}
+  } else {
+	printf("Not a valid option\n");
   }
 
 }
@@ -149,10 +120,10 @@ int validChoice(char *choice){
 
   for (int i = 0; i < 3; i++) {
 
-    if (strcmp(permissions[i], "") == 0) return -1;
+	if (strcmp(permissions[i], "") == 0) return -1;
 
-    //if this is true, then it means that the user does have authorization to use the feature
-    if(strcmp(permissions[i], choice) == 0) return 0;
+	//if this is true, then it means that the user does have authorization to use the feature
+	if(strcmp(permissions[i], choice) == 0) return 0;
   }
 
   return -1;
@@ -161,8 +132,8 @@ int validChoice(char *choice){
 
 void clientServerFunc(){
 
-    //TO-DO :O
-
+	//TO-DO :O
+	
 }
 
 void p2pFunc(){
@@ -179,4 +150,34 @@ void multicastFunc(){
 void error(char *s) {
 	perror(s);
 	exit(1);
+}
+
+void UDPWorker() {
+
+	int udp_recv_len, udp_fd;
+	struct sockaddr_in udp_ext_socket, udp_int_socket;
+	socklen_t slen = sizeof(arrival_addr);
+	char udp_buf[BUFLEN];
+	socklen_t udp_ext_len = sizeof(udp_ext_socket);
+
+	udp_fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if (udp_fd == -1) error("Error creating UDP socket");
+
+    udp_int_socket.sin_family = AF_INET;
+    udp_int_socket.sin_port = htons(CLIENT_PORT);
+    udp_int_socket.sin_addr.s_addr = htonl(INADDR_ANY);
+
+    int status = bind(udp_fd, (struct sockaddr*) &udp_int_socket, sizeof(udp_int_socket));
+    if (status == -1) error("Error binding UDP socket");
+
+    while (1) {
+
+        udp_recv_len = recvfrom(udp_fd, udp_buf, BUFLEN, 0, (struct sockaddr *) &udp_ext_socket, (socklen_t *)&udp_ext_len);
+        if (udp_recv_len == -1) continue;
+
+        udp_buf[udp_recv_len] = '\0';
+
+        printf("%s\n", udp_buf); // @TODO raw data, beautify this in the end. use this to debug before beautifying
+    }
+
 }

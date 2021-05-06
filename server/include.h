@@ -16,7 +16,7 @@
 #define TCP_PORT 9000	// TCP port to admin CLI
 #define UDP_PORT 5000   // UDP port
 #define MAX_USERS 20    // max users
-#define CLIENT_PORT 1000
+#define CLIENT_PORT 4000
 #define MAX_ARGUMENTS 7  //max number of arguments given to the admin CLI
 #define ARGUMENT_LEN 20  //length of an argument given to the admin CLI
 #define REPLY_SIZE 256
