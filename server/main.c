@@ -64,8 +64,6 @@ int switcher() {
 
     token = strtok(udp_buf, "&");
     while (token != NULL && i < 5) {
-        if (token[0] == 'd') break;
-
         strcpy(udp_pairs[i++], token);
         token = strtok(NULL, "&");
     }
@@ -228,7 +226,6 @@ int sendMSG() {
     strtok(messagepair, "=");
     message = strtok(NULL, "=");
 
-
     // @TODO EDGAR
     // fetch IP from destuser
     for (int i = 0 ; i < MAX_USERS; i++) {
@@ -267,7 +264,6 @@ int sendMSG() {
 		  error("Problem creating the socket");
 
 	  dest_addr.sin_family = AF_INET;
-    // TO -DO METER PORTO !!!!!!!!!!!!!!! (nao sabia como! )
 	  dest_addr.sin_port   = htons((short) CLIENT_PORT);
 	  dest_addr.sin_addr.s_addr = ((struct in_addr *)(hostPtr->h_addr))->s_addr;
 
