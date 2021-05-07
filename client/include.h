@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <pthread.h>
 
 #define BUFLEN 512	// buffer length
 #define CLIENT_PORT 4000
@@ -29,4 +30,4 @@ int validChoice(char *);
 void clientServerFunc();
 void p2pFunc();
 void multicastFunc();
-void UDPWorker();
+void* UDPWorker();

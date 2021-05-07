@@ -27,6 +27,7 @@ void authentication(){
   char password_input[30];
   char request[BUFLEN];
   char answer[BUFLEN];
+  answer[0] = '\0';
 
   printf("Username: ");
   scanf("%s",username_input);
@@ -49,6 +50,7 @@ void authentication(){
   strcpy(username , username_input);
 
   printf("AUTHENTICATION SUCCESSFULL!\n");
+  printf("%s\n", answer);
 
   int counter = 0;
   char *token  = strtok(answer, "|");
@@ -63,7 +65,6 @@ void authentication(){
 	token  = strtok(NULL, "|");
   }
 
-  printf("%s\n", answer);
 }
 
 
@@ -91,20 +92,20 @@ void menu(){
   printf("Option: ");
   scanf("%s", choice);
 
-  if ((strcmp(choice, "Client-Server") == 0)) {
-	if (validChoice("Client-Server") == 0) {
+  if ((strcmp(choice, "1") == 0)) {
+	if (validChoice("1 - Client-Server") == 0) {
 	  clientServerFunc();
 	} else {
 	  printf("You do not have authorization for this feature!\n");
 	}
-  } else if ((strcmp(choice, "P2P") == 0)) {
-	if (validChoice("P2P") == 0) {
+} else if ((strcmp(choice, "2") == 0)) {
+	if (validChoice("2 - P2P") == 0) {
 	  p2pFunc();
 	} else {
 	  printf("You do not have authorization for this feature!\n");
 	}
-  } else if ((strcmp(choice, "Group") == 0)) {
-	if (validChoice("Group") == 0) {
+} else if ((strcmp(choice, "3") == 0)) {
+	if (validChoice("3 - Group") == 0) {
 	  multicastFunc();
 	} else {
 	  printf("You do not have authorization for this feature!\n");
@@ -130,10 +131,40 @@ int validChoice(char *choice){
 }
 
 
+//connects to server  :)
 void clientServerFunc(){
 
-	//TO-DO :O
-	
+  char dest_user[30];
+  char message[200];
+  char request[BUFLEN];
+
+  dest_user[0] = '\0';
+  message[0] = '\0';
+  request[0] = '\0';
+  printf("Username to send information to: ");
+  scanf("%s", dest_user);
+
+
+  printf("[Welcome to chat]");
+
+  fgets(message, 200, stdin);
+
+  message[0] = '\0';
+
+  while(1){
+
+      printf("\n>>");
+
+
+      fgets(message, 200, stdin);
+
+      //message[strlen(message)- 1] = '\0';
+
+      sprintf(request, "mode=4&user=%s&destuser=%s&data=%s",username, dest_user, message);
+      sendto(client_udp_fd, request, strlen(request), MSG_CONFIRM, (struct sockaddr *) &dest_addr, sizeof(dest_addr));
+
+    }
+
 }
 
 void p2pFunc(){
@@ -143,7 +174,26 @@ void p2pFunc(){
 
 void multicastFunc(){
 
-  //TO-DO ;(
+
+    char request[BUFLEN];
+    int group = 0;
+    int choice;
+
+    printf("Options : 1 - Create a group | 2- Join a group");
+    scanf("%d",&choice);
+
+    if(choice == 1){
+        //sprintf(request, "mode=3&from=%s&group_mode=1&group_join=0");
+        sendto(client_udp_fd, request, strlen(request), MSG_CONFIRM, (struct sockaddr *) &dest_addr, sizeof(dest_addr));
+    }
+    else if(choice == 2){
+        //sprintf(request, "mode=3&from=%s&group_mode=2&group_join=0");
+        printf("wetf uipwe tui uioer uioer\n");
+    }
+    else{
+        printf("Invalid choice!\n");
+    }
+
 
 }
 
@@ -152,7 +202,7 @@ void error(char *s) {
 	exit(1);
 }
 
-void UDPWorker() {
+void* UDPWorker() {
 
 	int udp_recv_len, udp_fd;
 	struct sockaddr_in udp_ext_socket, udp_int_socket;
@@ -177,7 +227,8 @@ void UDPWorker() {
 
         udp_buf[udp_recv_len] = '\0';
 
-        printf("%s\n", udp_buf); // @TODO raw data, beautify this in the end. use this to debug before beautifying
+        printf(">%s\n>>", udp_buf); // @TODO raw data, beautify this in the end. use this to debug before beautifying
+        fflush(stdout);
     }
 
 }

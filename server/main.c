@@ -31,7 +31,7 @@ void init() {
     if (status == -1) error("Error binding UDP socket");
 
     // init TCP socket && user_list
-    
+
     init_tcp();
 
 }
@@ -47,6 +47,7 @@ void loopUDP() {
 
         udp_buf[udp_recv_len] = '\0';
 
+        printf("buffer: %s\n", udp_buf);
         status = switcher(); // detects which kind of request is and answers accordingly
         printf("status = %d\n", status);
     }
@@ -129,11 +130,11 @@ int auth() {
           char authorizations[300];
           authorizations[0] = '\0';
 
-          if (strcmp(user_list[i].client_server,"yes") == 0)  strcat(authorizations, "|Client-Server");
-          if (strcmp(user_list[i].p2p,"yes") == 0) strcat(authorizations, "|P2P");
-          if(strcmp(user_list[i].group, "yes") == 0) strcat(authorizations, "|Group");
+          if (strcmp(user_list[i].client_server,"yes") == 0)  strcat(authorizations, "|1 - Client-Server");
+          if (strcmp(user_list[i].p2p,"yes") == 0) strcat(authorizations, "|2 - P2P");
+          if(strcmp(user_list[i].group, "yes") == 0) strcat(authorizations, "|3 - Group");
 
-
+          printf("%s\n",authorizations);
           sprintf(answer, "OPTIONS: %s",authorizations);
           break;
         }
@@ -141,8 +142,8 @@ int auth() {
         //due to the username being unique if the password is denied, the access is denied
         else {
 
-          sprintf(answer, "ACCESS DENIED\n");
-          sendto(udp_fd, answer, BUFLEN, MSG_CONFIRM, (struct sockaddr *) &udp_ext_socket, sizeof(udp_ext_socket));
+          sprintf(answer, "ACCESS DENIED");
+          sendto(udp_fd, answer, strlen(answer), MSG_CONFIRM, (struct sockaddr *) &udp_ext_socket, sizeof(udp_ext_socket));
           return -1;
         }
 
@@ -151,7 +152,7 @@ int auth() {
     }
 
     // send response
-	  sendto(udp_fd, answer, BUFLEN, MSG_CONFIRM, (struct sockaddr *) &udp_ext_socket, sizeof(udp_ext_socket));
+	  sendto(udp_fd, answer, strlen(answer), MSG_CONFIRM, (struct sockaddr *) &udp_ext_socket, sizeof(udp_ext_socket));
 
     return 0;
 }
@@ -233,7 +234,7 @@ int sendMSG() {
       if (strcmp(user_list[i].username, "") == 0){
 
         sprintf(answer, "INVALID DESTINATION USER\n");
-        sendto(udp_fd, answer, BUFLEN, MSG_CONFIRM, (struct sockaddr *) &udp_ext_socket, sizeof(udp_ext_socket));
+        sendto(udp_fd, answer, strlen(answer), MSG_CONFIRM, (struct sockaddr *) &udp_ext_socket, sizeof(udp_ext_socket));
         return -1;
 
       }
