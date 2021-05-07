@@ -233,7 +233,7 @@ int sendMSG() {
 
       if (strcmp(user_list[i].username, "") == 0){
 
-        sprintf(answer, "INVALID DESTINATION USER\n");
+        sprintf(answer, "INVALID DESTINATION USER");
         sendto(udp_fd, answer, strlen(answer), MSG_CONFIRM, (struct sockaddr *) &udp_ext_socket, sizeof(udp_ext_socket));
         return -1;
 
@@ -453,7 +453,7 @@ void addUser(char arguments[MAX_ARGUMENTS][ARGUMENT_LEN]){
       strcpy(user_list[i].p2p, arguments[5]);
       strcpy(user_list[i].group, arguments[6]);
 
-      sprintf(reply, "SUCCESS\n");
+      sprintf(reply, "SUCCESS");
       write(tcp_client_fd, reply, strlen(reply) + 1);
 
       //TO-DO write new user to file
