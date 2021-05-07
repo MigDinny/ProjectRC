@@ -138,7 +138,58 @@ void clientServerFunc(){
 
 void p2pFunc(){
 
-  //TO-DO :P
+	// ask user for the destuser
+	char destuser[30];
+	destuser[0] = '\0';
+	scanf("Destination user: %s", &destuser);
+
+
+	// ask server for P2P IP address
+	char request[BUFLEN];
+	char answer[BUFLEN];
+	answer[0] = '\0';
+	request[0] = '\0';
+	sprintf(request, "mode=2&user=%s&destuser=%s", username, destuser);
+	sendto(client_udp_fd, request, strlen(request), MSG_CONFIRM, (struct sockaddr *) &dest_addr, sizeof(dest_addr));
+
+	//get answer
+	recvfrom(client_udp_fd, answer, BUFLEN, 0, (struct sockaddr *) &arrival_addr, (socklen_t *)&slen);
+
+	if(strcmp(answer, "INVALID DESTINATION USER") == 0){
+		printf("%s\n",answer);
+		exit(0);
+	}
+
+	// build socket to send messages
+	
+	int dest_fd;
+    struct sockaddr_in dest_addr, arrival_addr;
+    socklen_t slen = sizeof(arrival_addr);
+    struct hostent *hostPtr;
+
+	if ((hostPtr = gethostbyname(answer)) == 0)
+		error("Unreachable address");
+
+	if ((dest_fd = socket(AF_INET,SOCK_DGRAM,0)) == -1)
+		error("Problem creating the socket");
+
+	dest_addr.sin_family = AF_INET;
+	dest_addr.sin_port   = htons((short) CLIENT_PORT);
+	dest_addr.sin_addr.s_addr = ((struct in_addr *)(hostPtr->h_addr))->s_addr;
+
+	char buf[BUFLEN];
+	fgets(buf, BUFLEN, stdin);
+	buf[0] = '\0';
+
+    while (1) {
+
+		printf(">> ");
+		fgets(buf, BUFLEN, stdin);
+		
+    	sendto(dest_fd, buf, BUFLEN, MSG_CONFIRM, (struct sockaddr *) &dest_addr, sizeof(dest_addr));
+	}
+
+
 }
 
 void multicastFunc(){
