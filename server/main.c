@@ -177,7 +177,7 @@ int reqP2P() {
 
       if (strcmp(user_list[i].username, "") == 0){
 
-        sprintf(answer, "INVALID DESTINATION USER\n");
+        sprintf(answer, "INVALID DESTINATION USER");
         sendto(udp_fd, answer, BUFLEN, MSG_CONFIRM, (struct sockaddr *) &udp_ext_socket, sizeof(udp_ext_socket));
         return -1;
 
