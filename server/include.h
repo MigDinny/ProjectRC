@@ -76,3 +76,6 @@ struct sockaddr_in tcp_addr, tcp_client_addr;
 int tcp_client_addr_size;
 FILE* fp;
 char *file_name = "ficheiro.txt";
+
+int adress_number;
+char adresses[10] = ["226.1.1.1","226.1.1.2","226.1.1.3","226.1.1.4","226.1.1.5","226.1.1.6","226.1.1.7","226.1.1.8","226.1.1.9","226.1.1.10","226.1.1.11","226.1.1.12"];

@@ -192,7 +192,7 @@ void p2pFunc(){
 	}
 
 	// build socket to send messages
-	
+
 	int dest_fd;
     struct sockaddr_in dest_addr, arrival_addr;
     socklen_t slen = sizeof(arrival_addr);
@@ -216,7 +216,7 @@ void p2pFunc(){
 
 		printf(">> ");
 		fgets(buf, BUFLEN, stdin);
-		
+
     	sendto(dest_fd, buf, BUFLEN, MSG_CONFIRM, (struct sockaddr *) &dest_addr, sizeof(dest_addr));
 	}
 
@@ -230,22 +230,34 @@ void multicastFunc(){
     int group = 0;
     int choice;
 
-    printf("Options : 1 - Create a group | 2- Join a group");
-    scanf("%d",&choice);
-
-    if(choice == 1){
-        //sprintf(request, "mode=3&from=%s&group_mode=1&group_join=0");
-        sendto(client_udp_fd, request, strlen(request), MSG_CONFIRM, (struct sockaddr *) &dest_addr, sizeof(dest_addr));
-    }
-    else if(choice == 2){
-        //sprintf(request, "mode=3&from=%s&group_mode=2&group_join=0");
-        printf("wetf uipwe tui uioer uioer\n");
-    }
-    else{
-        printf("Invalid choice!\n");
-    }
 
 
+
+	while(1){
+
+		printf("Options : 1 - Create a group | 2- Join a group");
+	    scanf("%d",&choice);
+
+		//Create new group
+    	if(choice == 1){
+        	sprintf(request, "mode=3&from=%s&group_mode=1&group_join=0");
+        	sendto(client_udp_fd, request, strlen(request), MSG_CONFIRM, (struct sockaddr *) &dest_addr, sizeof(dest_addr));
+			continue;
+    	}
+		//Join group
+    	if(choice == 2){
+			//TO-DO ASK SERVER FOR IPS
+			sprintf(request, "mode=5&from=%s&group_mode=2&group_join=0");
+
+			//print ips
+			//asks client for ip
+        	sprintf(request, "mode=3&from=%s&group_mode=2&group_join=0");
+        	printf("wetf uipwe tui uioer uioer\n");
+
+			break;
+    	}
+
+	}
 }
 
 void error(char *s) {

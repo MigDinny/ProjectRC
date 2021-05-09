@@ -203,8 +203,35 @@ int reqP2P() {
 
 int reqMulticast() {
 
-    // blank for now
-        return 0;
+    char answer[BUFLEN];
+    char *userpair = udp_pairs[1];
+    char *group_mode = udp_pairs[2];
+    char *username;
+    char *destuser;
+
+    strtok(userpair, "=");
+    username = strtok(NULL, "=");
+
+    strtok(group_mode, "=");
+    group_mode = strtok(NULL, "=");
+
+    //Create new group
+    if(group_mode == 1){
+
+
+
+    }
+    //Join group
+    else{
+
+        char *group_join = udp_pairs[3];
+
+        strtok(group_join, "=");
+        group_join = strtok(NULL, "=");
+
+    }
+
+
 }
 
 int sendMSG() {
