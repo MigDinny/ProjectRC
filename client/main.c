@@ -35,8 +35,9 @@ void authentication(){
   sendto(client_udp_fd, request, strlen(request), MSG_CONFIRM, (struct sockaddr *) &dest_addr, sizeof(dest_addr));
 
   //get answer
-  recvfrom(client_udp_fd, answer , BUFLEN, 0, (struct sockaddr *) &arrival_addr, (socklen_t *)&slen);
+  int nread = recvfrom(client_udp_fd, answer , BUFLEN, 0, (struct sockaddr *) &arrival_addr, (socklen_t *)&slen);
 
+  answer[nread] = '\0';
   //means that authentication failed. The program ends (MIGUEL matamos o programa ou damos outra chance? mandar status num while até acertarem) // matamos o programa bro, nao merece viver
   if(strcmp(answer, "ACCESS DENIED") == 0){
 	printf("%s\n",answer);
@@ -171,7 +172,7 @@ void p2pFunc(){
 	// ask user for the destuser
 	char destuser[30];
 	destuser[0] = '\0';
-	scanf("Destination user: %s", &destuser);
+	scanf("Destination user: %s", destuser);
 
 
 	// ask server for P2P IP address
@@ -245,11 +246,16 @@ void multicastFunc(){
         	sendto(client_udp_fd, request, strlen(request), MSG_CONFIRM, (struct sockaddr *) &dest_addr, sizeof(dest_addr));
 
 			// print ips from server
-			recvfrom(client_udp_fd, answer, BUFLEN, 0, (struct sockaddr *) &arrival_addr, (socklen_t *)&slen);
-			printf("%s", answer);
+			int nread = recvfrom(client_udp_fd, answer, BUFLEN, 0, (struct sockaddr *) &arrival_addr, (socklen_t *)&slen);
+			printf("number sent : %d  length : %ld", nread, strlen(answer));
+			printf("%s\n", answer);
+
+			// if there were no groups created yet
+			if(strcmp(answer, "No groups created") == 0) continue;
 
 			// ask for multicast ip
-			scanf("%s", &multicast_ip);
+			printf("Give a valid multicast ip: ");
+			scanf("%s", multicast_ip);
 
 			break;
     	}
@@ -270,7 +276,7 @@ void multicastFunc(){
 		perror("Setting IP_MULTICAST_LOOP error");
 		exit(1);
 	}
-	
+
 	// set multicast interface
 	localInterface.s_addr = inet_addr("203.106.93.94"); // try INADDR_ANY if this doesnt work
 	if(setsockopt(client_udp_fd, IPPROTO_IP, IP_MULTICAST_IF, (char *)&localInterface, sizeof(localInterface)) < 0) {
@@ -325,7 +331,7 @@ void* UDPWorker() {
 
 		if (setsockopt(client_udp_fd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse)) < 0) {
 			perror("Setting SO_REUSEADDR error");
-			exit(1);	
+			exit(1);
 		}
 	}
 
