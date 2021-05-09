@@ -247,7 +247,10 @@ void multicastFunc(){
 
 			// print ips from server
 			int nread = recvfrom(client_udp_fd, answer, BUFLEN, 0, (struct sockaddr *) &arrival_addr, (socklen_t *)&slen);
-			printf("number sent : %d  length : %ld", nread, strlen(answer));
+
+
+			answer[nread] = '\0';
+
 			printf("%s\n", answer);
 
 			// if there were no groups created yet
