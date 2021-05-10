@@ -15,7 +15,8 @@
 char username[30];
 char permissions[3][30];
 
-
+int multicast = 0;
+char multicast_ip[20];
 int client_udp_fd;
 struct sockaddr_in dest_addr, arrival_addr;
 socklen_t slen = sizeof(arrival_addr);

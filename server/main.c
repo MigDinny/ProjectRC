@@ -143,6 +143,7 @@ int auth() {
         else {
 
           sprintf(answer, "ACCESS DENIED");
+
           sendto(udp_fd, answer, strlen(answer), MSG_CONFIRM, (struct sockaddr *) &udp_ext_socket, sizeof(udp_ext_socket));
           return -1;
         }
@@ -152,7 +153,8 @@ int auth() {
     }
 
     // send response
-	  sendto(udp_fd, answer, strlen(answer), MSG_CONFIRM, (struct sockaddr *) &udp_ext_socket, sizeof(udp_ext_socket));
+
+	sendto(udp_fd, answer, strlen(answer), MSG_CONFIRM, (struct sockaddr *) &udp_ext_socket, sizeof(udp_ext_socket));
 
     return 0;
 }
@@ -171,8 +173,8 @@ int reqP2P() {
     strtok(destuserpair, "=");
     destuser = strtok(NULL, "=");
 
-    // @TODO EDGAR
-    // fetch IP of destuser
+
+    // fetch IP of destuser»
     for (int i = 0 ; i < MAX_USERS; i++) {
 
       if (strcmp(user_list[i].username, "") == 0){
@@ -196,15 +198,48 @@ int reqP2P() {
     // send response with IP
 
     // or send invalid destuser
-	  sendto(udp_fd, answer, BUFLEN, MSG_CONFIRM, (struct sockaddr *) &udp_ext_socket, sizeof(udp_ext_socket));
+	  sendto(udp_fd, answer, strlen(answer), MSG_CONFIRM, (struct sockaddr *) &udp_ext_socket, sizeof(udp_ext_socket));
 
     return 0;
 }
 
 int reqMulticast() {
 
-    // blank for now
-        return 0;
+    char answer[BUFLEN];
+    char *group_mode = udp_pairs[1];
+
+    strtok(group_mode, "=");
+    group_mode = strtok(NULL, "=");
+
+    //Create new group
+    if ( strcmp(group_mode,"1") == 0 ) {
+
+        if (address_counter < 11) address_counter++;
+
+    }
+    //Join group
+    else{
+
+        //show possible ip groups
+        if (address_counter == 0) {
+            strcpy(answer, "No groups created");
+
+
+        } else {
+
+            strcpy(answer, "Group IPs:\n");
+            for (int i = 0; i < address_counter; i++) {
+                char aux[30];
+
+                sprintf(aux, "- %s\n", addresses[i]);
+                strcat(answer, aux);
+            }
+        }
+
+        sendto(udp_fd, answer, strlen(answer), MSG_CONFIRM, (struct sockaddr *) &udp_ext_socket, sizeof(udp_ext_socket));
+    }
+
+    return 0;
 }
 
 int sendMSG() {
@@ -271,7 +306,7 @@ int sendMSG() {
 
     // send message like this "<username>: message"
     sprintf(answer, "%s",message);
-    sendto(dest_fd, answer, BUFLEN, MSG_CONFIRM, (struct sockaddr *) &dest_addr, sizeof(dest_addr));
+    sendto(dest_fd, answer, strlen(answer), MSG_CONFIRM, (struct sockaddr *) &dest_addr, sizeof(dest_addr));
 
     return 0;
 }

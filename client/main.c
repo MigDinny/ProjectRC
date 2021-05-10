@@ -1,7 +1,6 @@
 #include "include.h"
 
 
-
 int main(int argc, char *argv[]) {
 
 	if (argc != 3) {
@@ -13,11 +12,8 @@ int main(int argc, char *argv[]) {
 
 	authentication();
 
-	// start thread to receive incoming UDP messages
-	pthread_create(&UDPThreadID, NULL, UDPWorker, NULL);
-
 	menu();
-	pause();
+
 }
 
 //
@@ -39,8 +35,9 @@ void authentication(){
   sendto(client_udp_fd, request, strlen(request), MSG_CONFIRM, (struct sockaddr *) &dest_addr, sizeof(dest_addr));
 
   //get answer
-  recvfrom(client_udp_fd, answer , BUFLEN, 0, (struct sockaddr *) &arrival_addr, (socklen_t *)&slen);
+  int nread = recvfrom(client_udp_fd, answer , BUFLEN, 0, (struct sockaddr *) &arrival_addr, (socklen_t *)&slen);
 
+  answer[nread] = '\0';
   //means that authentication failed. The program ends (MIGUEL matamos o programa ou damos outra chance? mandar status num while até acertarem) // matamos o programa bro, nao merece viver
   if(strcmp(answer, "ACCESS DENIED") == 0){
 	printf("%s\n",answer);
@@ -134,36 +131,39 @@ int validChoice(char *choice){
 //connects to server  :)
 void clientServerFunc(){
 
-  char dest_user[30];
-  char message[200];
-  char request[BUFLEN];
+	char dest_user[30];
+	char message[200];
+	char request[BUFLEN];
 
-  dest_user[0] = '\0';
-  message[0] = '\0';
-  request[0] = '\0';
-  printf("Username to send information to: ");
-  scanf("%s", dest_user);
-
-
-  printf("[Welcome to chat]");
-
-  fgets(message, 200, stdin);
-
-  message[0] = '\0';
-
-  while(1){
-
-      printf("\n>>");
+	dest_user[0] = '\0';
+	message[0] = '\0';
+	request[0] = '\0';
+	printf("Username to send information to: ");
+	scanf("%s", dest_user);
 
 
-      fgets(message, 200, stdin);
+	// start thread to receive incoming UDP messages
+	pthread_create(&UDPThreadID, NULL, UDPWorker, NULL);
 
-      //message[strlen(message)- 1] = '\0';
+	printf("[Welcome to chat]");
 
-      sprintf(request, "mode=4&user=%s&destuser=%s&data=%s",username, dest_user, message);
-      sendto(client_udp_fd, request, strlen(request), MSG_CONFIRM, (struct sockaddr *) &dest_addr, sizeof(dest_addr));
+	fgets(message, 200, stdin);
 
-    }
+	message[0] = '\0';
+
+	while(1){
+
+		printf("\n>>");
+
+
+		fgets(message, 200, stdin);
+
+		//message[strlen(message)- 1] = '\0';
+
+		sprintf(request, "mode=4&user=%s&destuser=%s&data=%s",username, dest_user, message);
+		sendto(client_udp_fd, request, strlen(request), MSG_CONFIRM, (struct sockaddr *) &dest_addr, sizeof(dest_addr));
+
+		}
 
 }
 
@@ -172,7 +172,7 @@ void p2pFunc(){
 	// ask user for the destuser
 	char destuser[30];
 	destuser[0] = '\0';
-	scanf("Destination user: %s", &destuser);
+	scanf("Destination user: %s", destuser);
 
 
 	// ask server for P2P IP address
@@ -191,22 +191,15 @@ void p2pFunc(){
 		exit(0);
 	}
 
-	// build socket to send messages
-	
-	int dest_fd;
-    struct sockaddr_in dest_addr, arrival_addr;
-    socklen_t slen = sizeof(arrival_addr);
-    struct hostent *hostPtr;
-
 	if ((hostPtr = gethostbyname(answer)) == 0)
 		error("Unreachable address");
-
-	if ((dest_fd = socket(AF_INET,SOCK_DGRAM,0)) == -1)
-		error("Problem creating the socket");
 
 	dest_addr.sin_family = AF_INET;
 	dest_addr.sin_port   = htons((short) CLIENT_PORT);
 	dest_addr.sin_addr.s_addr = ((struct in_addr *)(hostPtr->h_addr))->s_addr;
+
+	// start thread to receive incoming UDP messages
+	pthread_create(&UDPThreadID, NULL, UDPWorker, NULL);
 
 	char buf[BUFLEN];
 	fgets(buf, BUFLEN, stdin);
@@ -216,8 +209,8 @@ void p2pFunc(){
 
 		printf(">> ");
 		fgets(buf, BUFLEN, stdin);
-		
-    	sendto(dest_fd, buf, BUFLEN, MSG_CONFIRM, (struct sockaddr *) &dest_addr, sizeof(dest_addr));
+
+    	sendto(client_udp_fd, buf, BUFLEN, MSG_CONFIRM, (struct sockaddr *) &dest_addr, sizeof(dest_addr));
 	}
 
 
@@ -225,26 +218,91 @@ void p2pFunc(){
 
 void multicastFunc(){
 
-
     char request[BUFLEN];
     int group = 0;
-    int choice;
+    int choice = 0;
+	char answer[BUFLEN];
+	answer[0] = '\0';
+	multicast_ip[0] = '\0';
+	struct in_addr localInterface;
 
-    printf("Options : 1 - Create a group | 2- Join a group");
-    scanf("%d",&choice);
+	while(1){
 
-    if(choice == 1){
-        //sprintf(request, "mode=3&from=%s&group_mode=1&group_join=0");
-        sendto(client_udp_fd, request, strlen(request), MSG_CONFIRM, (struct sockaddr *) &dest_addr, sizeof(dest_addr));
-    }
-    else if(choice == 2){
-        //sprintf(request, "mode=3&from=%s&group_mode=2&group_join=0");
-        printf("wetf uipwe tui uioer uioer\n");
-    }
-    else{
-        printf("Invalid choice!\n");
-    }
+		printf("Options : 1 - Create a group | 2- Join a group");
+	    scanf("%d",&choice);
 
+		// Create new group
+    	if(choice == 1){
+			// groupmode=1, creates group server-side
+        	sprintf(request, "mode=3&groupmode=1");
+        	sendto(client_udp_fd, request, strlen(request), MSG_CONFIRM, (struct sockaddr *) &dest_addr, sizeof(dest_addr));
+			continue;
+    	}
+
+		// Join group
+    	if(choice == 2){
+			// groupmode=2, asks for ips
+			sprintf(request, "mode=3&groupmode=2");
+        	sendto(client_udp_fd, request, strlen(request), MSG_CONFIRM, (struct sockaddr *) &dest_addr, sizeof(dest_addr));
+
+			// print ips from server
+			int nread = recvfrom(client_udp_fd, answer, BUFLEN, 0, (struct sockaddr *) &arrival_addr, (socklen_t *)&slen);
+
+
+			answer[nread] = '\0';
+
+			printf("%s\n", answer);
+
+			// if there were no groups created yet
+			if(strcmp(answer, "No groups created") == 0) continue;
+
+			// ask for multicast ip
+			printf("Give a valid multicast ip: ");
+			scanf("%s", multicast_ip);
+
+			break;
+    	}
+
+	}
+
+	// prepare to sent packets to multicast group
+	if ((hostPtr = gethostbyname(multicast_ip)) == 0)
+		error("Unreachable address");
+
+	dest_addr.sin_family = AF_INET;
+	dest_addr.sin_port   = htons((short) CLIENT_PORT);
+	dest_addr.sin_addr.s_addr = ((struct in_addr *)(hostPtr->h_addr))->s_addr;
+
+	// disable loopback
+	char loopch = 0;
+	if(setsockopt(client_udp_fd, IPPROTO_IP, IP_MULTICAST_LOOP, (char *)&loopch, sizeof(loopch)) < 0) {
+		perror("Setting IP_MULTICAST_LOOP error");
+		exit(1);
+	}
+
+	// set multicast interface
+	localInterface.s_addr = inet_addr("203.106.93.94"); // try INADDR_ANY if this doesnt work
+	if(setsockopt(client_udp_fd, IPPROTO_IP, IP_MULTICAST_IF, (char *)&localInterface, sizeof(localInterface)) < 0) {
+  		perror("Setting local interface error");
+  		exit(1);
+	}
+
+	multicast = 1;
+	// start thread to receive incoming UDP messages
+	pthread_create(&UDPThreadID, NULL, UDPWorker, NULL);
+
+	// loop to send messages
+	char buf[BUFLEN];
+	fgets(buf, BUFLEN, stdin);
+	buf[0] = '\0';
+
+    while (1) {
+
+		printf(">> ");
+		fgets(buf, BUFLEN, stdin);
+
+    	sendto(client_udp_fd, buf, BUFLEN, MSG_CONFIRM, (struct sockaddr *) &dest_addr, sizeof(dest_addr));
+	}
 
 }
 
@@ -255,11 +313,13 @@ void error(char *s) {
 
 void* UDPWorker() {
 
+	// init variables and create socket
 	int udp_recv_len, udp_fd;
 	struct sockaddr_in udp_ext_socket, udp_int_socket;
 	socklen_t slen = sizeof(arrival_addr);
 	char udp_buf[BUFLEN];
 	socklen_t udp_ext_len = sizeof(udp_ext_socket);
+	struct ip_mreq group;
 
 	udp_fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (udp_fd == -1) error("Error creating UDP socket");
@@ -268,9 +328,32 @@ void* UDPWorker() {
     udp_int_socket.sin_port = htons(CLIENT_PORT);
     udp_int_socket.sin_addr.s_addr = htonl(INADDR_ANY);
 
+	// set reuse opt
+	if (multicast == 1) {
+		int reuse = 1;
+
+		if (setsockopt(client_udp_fd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse)) < 0) {
+			perror("Setting SO_REUSEADDR error");
+			exit(1);
+		}
+	}
+
+	// bind
     int status = bind(udp_fd, (struct sockaddr*) &udp_int_socket, sizeof(udp_int_socket));
     if (status == -1) error("Error binding UDP socket");
 
+	// add membership to the group
+	if (multicast == 1) {
+		group.imr_multiaddr.s_addr = inet_addr(multicast_ip);
+		group.imr_interface.s_addr = inet_addr("203.106.93.94"); // try INADDR_ANY if this doesnt work
+
+		if (setsockopt(client_udp_fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&group, sizeof(group)) < 0) {
+			perror("Adding multicast group error");
+			exit(1);
+		}
+	}
+
+	// loop to receive messages and print them out
     while (1) {
 
         udp_recv_len = recvfrom(udp_fd, udp_buf, BUFLEN, 0, (struct sockaddr *) &udp_ext_socket, (socklen_t *)&udp_ext_len);
