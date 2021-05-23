@@ -8,10 +8,12 @@ int main(int argc, char *argv[]) {
 	  exit(0);
 	}
 
+
 	init(argv[1], argv[2]);
 
-	authentication();
 
+	authentication();
+	sigint(SIGINT, sigint);
 	menu();
 
 }
@@ -38,7 +40,7 @@ void authentication(){
   int nread = recvfrom(client_udp_fd, answer , BUFLEN, 0, (struct sockaddr *) &arrival_addr, (socklen_t *)&slen);
 
   answer[nread] = '\0';
-  //means that authentication failed. The program ends (MIGUEL matamos o programa ou damos outra chance? mandar status num while até acertarem) // matamos o programa bro, nao merece viver
+
   if(strcmp(answer, "ACCESS DENIED") == 0){
 	printf("%s\n",answer);
 	exit(0);
@@ -172,8 +174,9 @@ void p2pFunc(){
 	// ask user for the destuser
 	char destuser[30];
 	destuser[0] = '\0';
-	scanf("Destination user: %s", destuser);
 
+	printf("Destination user: ");
+	scanf("%s", destuser);
 
 	// ask server for P2P IP address
 	char request[BUFLEN];
@@ -191,12 +194,22 @@ void p2pFunc(){
 		exit(0);
 	}
 
-	if ((hostPtr = gethostbyname(answer)) == 0)
-		error("Unreachable address");
 
-	dest_addr.sin_family = AF_INET;
-	dest_addr.sin_port   = htons((short) CLIENT_PORT);
-	dest_addr.sin_addr.s_addr = ((struct in_addr *)(hostPtr->h_addr))->s_addr;
+	struct sockaddr_in p2p_client_addr;
+	struct hostent *hostPtrP2P;
+	int p2p_fd;
+
+	printf("ans = %s\n",answer);
+
+	//if ((hostPtrP2P = gethostbyname(answer)) == 0)
+		//error("Unreachable address");
+
+	if ((p2p_fd = socket(AF_INET,SOCK_DGRAM,0)) == -1)
+		error("socket");
+
+	p2p_client_addr.sin_family = AF_INET;
+	p2p_client_addr.sin_port   = htons((short) CLIENT_PORT);
+	p2p_client_addr.sin_addr.s_addr = inet_addr(answer);
 
 	// start thread to receive incoming UDP messages
 	pthread_create(&UDPThreadID, NULL, UDPWorker, NULL);
@@ -210,7 +223,8 @@ void p2pFunc(){
 		printf(">> ");
 		fgets(buf, BUFLEN, stdin);
 
-    	sendto(client_udp_fd, buf, BUFLEN, MSG_CONFIRM, (struct sockaddr *) &dest_addr, sizeof(dest_addr));
+    	sendto(p2p_fd, buf, strlen(buf), MSG_CONFIRM, (struct sockaddr *) &p2p_client_addr, sizeof(p2p_client_addr));
+
 	}
 
 
@@ -251,19 +265,72 @@ void multicastFunc(){
 
 			answer[nread] = '\0';
 
-			printf("%s\n", answer);
+
 
 			// if there were no groups created yet
-			if(strcmp(answer, "No groups created") == 0) continue;
+			if(strcmp(answer, "No groups created") == 0){
+				printf("%s\n", answer);
+				continue;
+			}
 
+			printf("Answer: %s\n",answer);
 			// ask for multicast ip
+			char validIps[4][20];
+
+			//We now store all the ips avaiable sent by the server. We wait for the user to choose one and if it is correct we add the client to the new mode
+			char *token;
+
+		    for (int u = 0; u < 5; u++)
+		        validIps[u][0] = '\0';
+
+		    int i = 0;
+		    token = strtok(answer, "-");
+		    while (token != NULL) {
+		        strcpy(validIps[i++], token);
+		        token = strtok(NULL, "-");
+		    }
+
+			printf("---Groups---\n");
+
+			for(int j = 0 ; j < 4; j++){
+				if(strcmp(validIps[j], "") == 0){
+					break;
+				}
+				printf("- %s\n",validIps[j]);
+			}
+
 			printf("Give a valid multicast ip: ");
 			scanf("%s", multicast_ip);
+
+			int correct = 0;
+
+			//Check if the input is valid
+			for(int j = 0 ; j < 4; j++){
+
+				if(strcmp(validIps[j], "")==0){
+					break;
+				}
+
+				if(strcmp(validIps[j], multicast_ip) == 0){
+				correct = 1;
+					break;
+				}
+
+			}
+			//Means there was no match
+			if(correct == 0){
+				printf("Invalid group\n");
+				continue;
+			}
 
 			break;
     	}
 
 	}
+
+	multicast_interface[0] = '\0';
+	printf("Local interface address : " );
+	scanf("%s", multicast_interface);
 
 	// prepare to sent packets to multicast group
 	if ((hostPtr = gethostbyname(multicast_ip)) == 0)
@@ -280,8 +347,15 @@ void multicastFunc(){
 		exit(1);
 	}
 
+	//increase ttl
+	int ttl = 60;
+	if(setsockopt(client_udp_fd, IPPROTO_IP, IP_MULTICAST_TTL, &ttl, sizeof(ttl)) < 0) {
+	  	perror("Setting local interface error");
+  		exit(1);
+	}
+
 	// set multicast interface
-	localInterface.s_addr = inet_addr("203.106.93.94"); // try INADDR_ANY if this doesnt work
+	localInterface.s_addr = inet_addr(multicast_interface); // try INADDR_ANY if this doesnt work
 	if(setsockopt(client_udp_fd, IPPROTO_IP, IP_MULTICAST_IF, (char *)&localInterface, sizeof(localInterface)) < 0) {
   		perror("Setting local interface error");
   		exit(1);
@@ -345,7 +419,8 @@ void* UDPWorker() {
 	// add membership to the group
 	if (multicast == 1) {
 		group.imr_multiaddr.s_addr = inet_addr(multicast_ip);
-		group.imr_interface.s_addr = inet_addr("203.106.93.94"); // try INADDR_ANY if this doesnt work
+
+		group.imr_interface.s_addr = inet_addr(multicast_interface); // try INADDR_ANY if this doesnt work
 
 		if (setsockopt(client_udp_fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&group, sizeof(group)) < 0) {
 			perror("Adding multicast group error");
@@ -365,4 +440,16 @@ void* UDPWorker() {
         fflush(stdout);
     }
 
+}
+
+void sigint(int signum) {
+    // pthread_cancel
+   //pthread_cancel(TCP_thread_id);
+    pthread_cancel(UDPThreadID);
+
+    // cleanup
+    close(client_udp_fd);
+
+    // exit
+    exit(0);
 }
