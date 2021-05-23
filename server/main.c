@@ -2,6 +2,7 @@
 
 int main(int argc, char *argv[]) {
 
+    signal(SIGINT, sigint);
     // init variables
     init();
 
@@ -93,7 +94,7 @@ int switcher() {
 
 /* »»»»»»»»»»»»»»»»»»»»»»»»»»»»»»» */
 
-
+//user
 int auth() {
 
     char answer[BUFLEN];
@@ -174,7 +175,7 @@ int reqP2P() {
     destuser = strtok(NULL, "=");
 
 
-    // fetch IP of destuser»
+    // fetch IP of destuser
     for (int i = 0 ; i < MAX_USERS; i++) {
 
       if (strcmp(user_list[i].username, "") == 0){
@@ -186,7 +187,7 @@ int reqP2P() {
       }
 
       //means username has a match
-      if (strcmp(user_list[i].username, username) == 0) {
+      if (strcmp(user_list[i].username, destuser) == 0) {
 
         sprintf(answer, "%s", user_list[i].ip);
         break;
@@ -206,15 +207,22 @@ int reqP2P() {
 int reqMulticast() {
 
     char answer[BUFLEN];
+    answer[0] = '\0';
     char *group_mode = udp_pairs[1];
-
+	printf("1231 %s", answer);
     strtok(group_mode, "=");
     group_mode = strtok(NULL, "=");
 
     //Create new group
     if ( strcmp(group_mode,"1") == 0 ) {
 
-        if (address_counter < 11) address_counter++;
+        if (address_counter < 3) address_counter++;
+
+        //Means that the limit of amount of groups has been reached.
+        else{
+            strcpy(answer, "No space to create a new group");
+            sendto(udp_fd, answer, strlen(answer), MSG_CONFIRM, (struct sockaddr *) &udp_ext_socket, sizeof(udp_ext_socket));
+        }
 
     }
     //Join group
@@ -223,19 +231,21 @@ int reqMulticast() {
         //show possible ip groups
         if (address_counter == 0) {
             strcpy(answer, "No groups created");
+        }
 
-
-        } else {
-
-            strcpy(answer, "Group IPs:\n");
+        //Means that atleast 1 group has been created. Returns options to the user
+        else {
+            char aux[200];
+            aux[0] = '\0';
             for (int i = 0; i < address_counter; i++) {
-                char aux[30];
 
-                sprintf(aux, "- %s\n", addresses[i]);
+                if(i == 0) sprintf(aux, "%s", addresses[i]);
+                else sprintf(aux, "-%s", addresses[i]);
+
                 strcat(answer, aux);
             }
         }
-
+		printf("STRING %s\n", answer);
         sendto(udp_fd, answer, strlen(answer), MSG_CONFIRM, (struct sockaddr *) &udp_ext_socket, sizeof(udp_ext_socket));
     }
 
@@ -262,7 +272,7 @@ int sendMSG() {
     strtok(messagepair, "=");
     message = strtok(NULL, "=");
 
-    // @TODO EDGAR
+
     // fetch IP from destuser
     for (int i = 0 ; i < MAX_USERS; i++) {
 
@@ -275,7 +285,7 @@ int sendMSG() {
       }
 
       //means username has a match
-      if (strcmp(user_list[i].username, username) == 0) {
+      if (strcmp(user_list[i].username, destuser) == 0) {
 
         strcpy(endClient,  user_list[i].ip);
 
@@ -296,7 +306,7 @@ int sendMSG() {
 	  if ((hostPtr = gethostbyname(endClient)) == 0)
 		  error("Unreachable address");
 
-	  if ((dest_fd = socket(AF_INET,SOCK_DGRAM,0)) == -1)
+	  if ((dest_fd = socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP)) == -1)
 		  error("Problem creating the socket");
 
 	  dest_addr.sin_family = AF_INET;
@@ -362,7 +372,7 @@ void *TCPWorker(void *id) {
           token  = strtok(NULL, " ");
         }
 
-
+        //LIST functionality
         if( strcmp(arguments[0], "LIST") == 0){
 
           if(counter == 1){
@@ -376,6 +386,7 @@ void *TCPWorker(void *id) {
 
         }
 
+        //ADD funcionality
         else if (strcmp(arguments[0], "ADD") == 0) {
 
           //make sure there are 8 arguments
@@ -392,7 +403,7 @@ void *TCPWorker(void *id) {
           }
 
         }
-
+        //Delete functionality
         else if (strcmp(arguments[0], "DEL") == 0){
 
           if( counter == 2 ){
@@ -488,7 +499,7 @@ void addUser(char arguments[MAX_ARGUMENTS][ARGUMENT_LEN]){
       strcpy(user_list[i].p2p, arguments[5]);
       strcpy(user_list[i].group, arguments[6]);
 
-      sprintf(reply, "SUCCESS");
+      sprintf(reply, "SUCCESS\n");
       write(tcp_client_fd, reply, strlen(reply) + 1);
 
       //TO-DO write new user to file
