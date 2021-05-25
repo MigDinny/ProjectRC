@@ -2,6 +2,16 @@
 
 int main(int argc, char *argv[]) {
 
+    if (argc != 4) {
+      printf("server <porto clientes> <porto config> <ficheiro registos> \n");
+      exit(0);
+    }
+
+    strcpy(file_name, argv[3]);
+    
+    UDP_PORT = atoi(argv[1]);
+    TCP_PORT = atoi(argv[2]);
+
     signal(SIGINT, sigint);
     // init variables
     init();

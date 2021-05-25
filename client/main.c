@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
 
 
 	authentication();
-	sigint(SIGINT, sigint);
+	signal(SIGINT, sigint);
 	menu();
 
 }
