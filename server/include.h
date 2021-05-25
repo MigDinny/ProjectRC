@@ -13,8 +13,10 @@
 
 
 #define BUFLEN 512	// buffer length
-#define TCP_PORT 9000	// TCP port to admin CLI
-#define UDP_PORT 5000   // UDP port
+//#define TCP_PORT 9000	// TCP port to admin CLI
+//#define UDP_PORT 5000   // UDP port
+int TCP_PORT = 9000;
+int UDP_PORT = 5000;
 #define MAX_USERS 20    // max users
 #define CLIENT_PORT 4000
 #define MAX_ARGUMENTS 7  //max number of arguments given to the admin CLI

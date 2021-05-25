@@ -9,6 +9,7 @@
 #include <netdb.h>
 #include <pthread.h>
 #include <errno.h>
+#include <signal.h>
 
 #define BUFLEN 512	// buffer length
 #define CLIENT_PORT 4000
